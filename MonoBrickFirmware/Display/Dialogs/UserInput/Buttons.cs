@@ -5,7 +5,7 @@ namespace MonoBrickFirmware.Display.Dialogs.UserInput
 	
 	public enum ExitType {Left, Center, Right};
 
-	public struct Position
+	public class Position
 	{
 		public Position(int x, int y)
 		{
