@@ -19,7 +19,14 @@ namespace PositionPIDExample
 			
 			Motor motor = new Motor(MotorPort.OutA);
 			motor.ResetTacho();
-			PositionPID PID = new PositionPID(motor, 4000, true, 50, P, I, D, 5000);
+			PositionPID PID = new PositionPID(motor:motor, 
+																				position:4000, 
+																				brake:true, 
+																				maxPower:50, 
+																				P:P, 
+																				I:I, 
+																				D:D, 
+																				settleTimeMs:5000);
 			var waitHandle = PID.Run();
 			LcdConsole.WriteLine("Moving motor A to position 4000");
 			LcdConsole.WriteLine("Waiting for controller to finish");

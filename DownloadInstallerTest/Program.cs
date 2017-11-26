@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using MonoBrickFirmware.FirmwareUpdate;
+using MonoBrickFirmware.Display;
 
 namespace DownloadInstallerTest
 {
@@ -20,7 +21,7 @@ namespace DownloadInstallerTest
 			catch(Exception e)
 			{
 
-				Console.WriteLine(e.Message);
+				LcdConsole.WriteLine(e.Message);
 				ok = false;
 			}
 			return ok;
@@ -28,18 +29,21 @@ namespace DownloadInstallerTest
 
 		private static bool DownloadAndInstallPackage(string packageName, string packageUrl, string downloadPath)
 		{
+			LcdConsole.WriteLine("Downloading file: {0} from: {1}", packageName, packageUrl);
 			bool ok = true;
 			InstallPackage installPackage = new InstallPackage();
+
 			ok = DownloadFile(packageName, packageUrl, downloadPath);
 			if(ok)
 			{
+				LcdConsole.WriteLine("Download success!!!  Installing...");
 				try
 				{
 					installPackage = installPackage.LoadFromXML(Path.Combine(downloadPath,packageName));
 				}
 				catch(Exception e)
 				{
-					Console.WriteLine (e.Message);
+					LcdConsole.WriteLine(e.Message);
 					ok = false;
 				}
 				if(ok)

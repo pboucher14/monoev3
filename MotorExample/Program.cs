@@ -49,7 +49,7 @@ namespace MotorExample
 			Thread.Sleep(3000);
 			motorA.ResetTacho();
 			motorD.ResetTacho();
-			LcdConsole.WriteLine("Moving motors A to 2000");
+			LcdConsole.WriteLine("Moving motor A to 2000");
 			LcdConsole.WriteLine("Moving motor D to 1000");
 			WaitHandle[] handles = new WaitHandle[2];
 			handles[0] =  motorA.SpeedProfile(50, 200, 1600, 200,true);
