@@ -4,127 +4,116 @@ using System.Threading;
 using System.Collections.Generic;
 using MonoBrickFirmware.Native;
 
-
 namespace MonoBrickFirmware.Movement
-{	
+{
 	/// <summary>
 	/// Class for EV3 motor
 	/// </summary>
-	public class Motor :  MotorBase
+	public class Motor : MotorBase
 	{
+		#region Private Fields
+
 		/// <summary>
-		/// Initializes a new instance of the <see cref="MonoBrickFirmware.Movement.Motor"/> class.
+		/// The reverse value
 		/// </summary>
-		/// <param name="port">Port.</param>
+		private bool reverse = false;
+
+		#endregion
+
+		#region Private Properties
+
+		/// <summary>
+		/// Gets or sets a value indicating whether motor runs in reverse direction
+		/// </summary>
+		/// <value> <c> true </c> if reverse; otherwise, <c> false </c>. </value>
+		private bool Reverse
+		{
+			get
+			{
+				return reverse;
+			}
+			set
+			{
+				reverse = value;
+				if (reverse)
+				{
+					output.SetPolarity(Polarity.Backward);
+				}
+				else
+				{
+					output.SetPolarity(Polarity.Forward);
+				}
+			}
+		}
+
+		#endregion
+
+		#region Public Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the <see
+		/// cref="MonoBrickFirmware.Movement.Motor"/> class.
+		/// </summary>
+		/// <param name="port"> Port. </param>
 		public Motor(MotorPort port) : base()
 		{
 			this.BitField = MotorPortToBitfield(port);
 			Reverse = false;
 		}
 
+		#endregion
+		#region Public Methods
+
 		/// <summary>
-		/// The reverse value
+		/// Gets the speed of the motor
 		/// </summary>
-		private bool reverse = false;
-		
-		/// <summary>
-		/// Gets or sets a value indicating whether motor runs in reverse direction
-		/// </summary>
-		/// <value>
-		/// <c>true</c> if reverse; otherwise, <c>false</c>.
-		/// </value>
-		private bool Reverse {
-			get {
-				return reverse;
-			} 
-			set {
-				reverse = value;
-				if(reverse){
-					output.SetPolarity(Polarity.Backward);
-				}
-				else{
-					output.SetPolarity(Polarity.Forward);
-				}
-			}
-		}
-		
-		/// <summary>
-		/// Move the motor
-		/// </summary>
-		/// <param name='speed'>
-		/// Speed of the motor -100 to 100
-		/// </param>
-		public void SetSpeed(sbyte speed)
+		/// <returns> The speed. </returns>
+		public sbyte GetSpeed()
 		{
-			CancelPolling();
-			output.Start(speed);
+			return output.GetSpeed(this.PortList[0]);
 		}
-		
 		/// <summary>
-		/// Create a speed profile where ramp up and down is specified in steps
+		/// Gets the tacho count.
 		/// </summary>
-		/// <param name="speed">Maximum speed of the motor.</param>
-		/// <param name="rampUpSteps">Ramp up steps.</param>
-		/// <param name="constantSpeedSteps">Constant speed steps.</param>
-		/// <param name="rampDownSteps">Ramp down steps.</param>
-		/// <param name="brake">If set to <c>true</c> the motor will brake when movement is done.</param>
-		public WaitHandle SpeedProfile (sbyte speed, UInt32 rampUpSteps, UInt32 constantSpeedSteps, UInt32 rampDownSteps, bool brake)
+		/// <returns> The tacho count </returns>
+		public Int32 GetTachoCount()
 		{
-			output.SetPower (0);
-			StartPooling ();
-			output.SetStepSpeed (speed, rampUpSteps, constantSpeedSteps, rampDownSteps, brake);
-			return WaitForMotorsToStop();
+			return output.GetCount(this.PortList[0]);
 		}
-		
-		/// <summary>
-		/// Create a speed profile where ramp up and down is specified in time
-		/// </summary>
-		/// <param name="speed">Maximum speed of the motor.</param>
-		/// <param name="rampUpTimeMs">Ramp up time ms.</param>
-		/// <param name="constantSpeedTimeMs">Constant speed time ms.</param>
-		/// <param name="rampDownTimeMs">Ramp down time ms.</param>
-		/// <param name="brake">If set to <c>true</c> the motor will brake when movement is done.</param>
-		public WaitHandle SpeedProfileTime(sbyte speed, UInt32 rampUpTimeMs, UInt32 constantSpeedTimeMs, UInt32 rampDownTimeMs, bool brake)
-		{
-			output.SetPower (0);
-			StartPooling();
-			output.SetTimeSpeed(speed, rampUpTimeMs, constantSpeedTimeMs, rampUpTimeMs, brake);
-			return WaitForMotorsToStop();
-		}
-		
 		/// <summary>
 		/// Create a power profile where ramp up and down is specified in steps
 		/// </summary>
-		/// <param name="power">Maximum power of the motor.</param>
-		/// <param name="rampUpSteps">Ramp up steps.</param>
-		/// <param name="constantSpeedSteps">Constant speed steps.</param>
-		/// <param name="rampDownSteps">Ramp down steps.</param>
-		/// <param name="brake">If set to <c>true</c> the motor will brake when movement is done.</param>
+		/// <param name="power"> Maximum power of the motor. </param>
+		/// <param name="rampUpSteps"> Ramp up steps. </param>
+		/// <param name="constantSpeedSteps"> Constant speed steps. </param>
+		/// <param name="rampDownSteps"> Ramp down steps. </param>
+		/// <param name="brake">
+		/// If set to <c> true </c> the motor will brake when movement is done.
+		/// </param>
 		public WaitHandle PowerProfile(sbyte power, UInt32 rampUpSteps, UInt32 constantSpeedSteps, UInt32 rampDownSteps, bool brake)
 		{
-			output.SetPower (0);
-			StartPooling();
-			output.SetStepPower(power,rampUpSteps, constantSpeedSteps, rampDownSteps, brake);
+			output.SetPower(0);
+			StartPolling();
+			output.SetStepPower(power, rampUpSteps, constantSpeedSteps, rampDownSteps, brake);
 			return WaitForMotorsToStop();
 		}
-		
 		/// <summary>
 		/// Create a power profile where ramp up and down is specified in time
 		/// </summary>
-		/// <param name="power">Maximum power of the motor.</param>
-		/// <param name="rampUpTimeMs">Ramp up time ms.</param>
-		/// <param name="constantSpeedTimeMs">Constant speed time ms.</param>
-		/// <param name="rampDownTimeMs">Ramp down time ms.</param>
-		/// <param name="brake">If set to <c>true</c> the motor will brake when movement is done.</param>
-		public WaitHandle PowerProfileTime (byte power, UInt32 rampUpTimeMs, UInt32 constantSpeedTimeMs, UInt32 rampDownTimeMs, bool brake)
+		/// <param name="power"> Maximum power of the motor. </param>
+		/// <param name="rampUpTimeMs"> Ramp up time ms. </param>
+		/// <param name="constantSpeedTimeMs"> Constant speed time ms. </param>
+		/// <param name="rampDownTimeMs"> Ramp down time ms. </param>
+		/// <param name="brake">
+		/// If set to <c> true </c> the motor will brake when movement is done.
+		/// </param>
+		public WaitHandle PowerProfileTime(byte power, UInt32 rampUpTimeMs, UInt32 constantSpeedTimeMs, UInt32 rampDownTimeMs, bool brake)
 		{
-			output.SetPower (0);
-			StartPooling();
-			output.SetTimePower(power, rampUpTimeMs,constantSpeedTimeMs,rampDownTimeMs, brake);
+			output.SetPower(0);
+			StartPolling();
+			output.SetTimePower(power, rampUpTimeMs, constantSpeedTimeMs, rampDownTimeMs, brake);
 			return WaitForMotorsToStop();
-			
 		}
-
 		/// <summary>
 		/// Resets the tacho
 		/// </summary>
@@ -132,24 +121,52 @@ namespace MonoBrickFirmware.Movement
 		{
 			output.ClearCount();
 		}
-	
 		/// <summary>
-		/// Gets the tacho count.
+		/// Move the motor
 		/// </summary>
-		/// <returns>
-		/// The tacho count
-		/// </returns>
-	    public Int32 GetTachoCount(){
-			return output.GetCount(this.PortList[0]);
-		}
-		
-		/// <summary>
-		/// Gets the speed of the motor
-		/// </summary>
-		/// <returns>The speed.</returns>
-		public sbyte GetSpeed ()
+		/// <param name="speed"> Speed of the motor -100 to 100 </param>
+		public void SetSpeed(sbyte speed)
 		{
-			return output.GetSpeed(this.PortList[0]);
+			CancelPolling();
+			output.Start(speed);
 		}
+
+		/// <summary>
+		/// Create a speed profile where ramp up and down is specified in steps
+		/// </summary>
+		/// <param name="speed"> Maximum speed of the motor. </param>
+		/// <param name="rampUpSteps"> Ramp up steps. </param>
+		/// <param name="constantSpeedSteps"> Constant speed steps. </param>
+		/// <param name="rampDownSteps"> Ramp down steps. </param>
+		/// <param name="brake">
+		/// If set to <c> true </c> the motor will brake when movement is done.
+		/// </param>
+		public WaitHandle SpeedProfile(sbyte speed, UInt32 rampUpSteps, UInt32 constantSpeedSteps, UInt32 rampDownSteps, bool brake)
+		{
+			output.SetPower(0);
+			StartPolling();
+			output.SetStepSpeed(speed, rampUpSteps, constantSpeedSteps, rampDownSteps, brake);
+			return WaitForMotorsToStop();
+		}
+
+		/// <summary>
+		/// Create a speed profile where ramp up and down is specified in time
+		/// </summary>
+		/// <param name="speed"> Maximum speed of the motor. </param>
+		/// <param name="rampUpTimeMs"> Ramp up time ms. </param>
+		/// <param name="constantSpeedTimeMs"> Constant speed time ms. </param>
+		/// <param name="rampDownTimeMs"> Ramp down time ms. </param>
+		/// <param name="brake">
+		/// If set to <c> true </c> the motor will brake when movement is done.
+		/// </param>
+		public WaitHandle SpeedProfileTime(sbyte speed, UInt32 rampUpTimeMs, UInt32 constantSpeedTimeMs, UInt32 rampDownTimeMs, bool brake)
+		{
+			output.SetPower(0);
+			StartPolling();
+			output.SetTimeSpeed(speed, rampUpTimeMs, constantSpeedTimeMs, rampUpTimeMs, brake);
+			return WaitForMotorsToStop();
+		}
+
+		#endregion
 	}
 }
